@@ -19,19 +19,18 @@ int main(int argc, char *argv[], char *envp[])
 	signal(SIGINT, SIG_IGN);
 	signal(SIGINT, handle_signal);
 	printf("[start][MY_SHELL ] ");
-	int i=0;
-	while(c != EOF) {
-		c = getchar();
-		line[i]=c;
-		i++;
-		if(c == '\n'){
-			line[i-1]='\0';
-			i=0;
-                 	fork_exec(line,argv,envp);
-			printf("[normal][MY_SHELL ] ");
-		}
-
-	}
+	
+	
+	char *line = NULL;
+	size_t size;
+	int stringLength;
+    while (getline(&line, &size, stdin) != -1) {
+        stringLength = (int)strlen (line);
+        line[stringLength-1]='\0';
+        fork_exec(line,argv,envp);
+        printf("[normal][MY_SHELL ] ");
+    }
+	
 	printf("EOF\n");
 	return 0;
 }
