@@ -7,7 +7,8 @@
 typedef void (*sighandler_t)(int);
 char c = '\0';
 char  line[100];
-void fork_exec(char line[], char *argv[], char *envp[]);
+void fork_exec(char line[], char *envp[]);
+char** parse_line(char line[]);
 void handle_signal(int signo)
 {
 	//printf("\n[sig%d]\n",signo);
@@ -36,7 +37,7 @@ Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
         
 		if(checkBuiltInFunctions(line) == 0) break;
 		
-        fork_exec(line,argv,envp);
+        fork_exec(line,envp);
         printf("obdoSH -> ");
     }
     
@@ -52,15 +53,17 @@ int checkBuiltInFunctions(char line[]){
 	return result;
 }
 
-void fork_exec(char line[], char *argv[], char *envp[]){
+void fork_exec(char line[], char *envp[]){
     
+	char **args;
+	args=parse_line(line);
+
     int id=fork();
     
     if(id==0) {
 		
 		printf("child executing\n");
-		
-	    execvpe(line,argv,envp);
+	    execvpe(args[0],args,envp);
 		printf("child couldn't be executed\n");
 		exit(0);
 		
@@ -80,4 +83,36 @@ void fork_exec(char line[], char *argv[], char *envp[]){
 
 
 }
+char** parse_line(char line[]){
+	printf("parsing line : \"%s\"\n",line );
+	
+	int i=0,space_count=0;
+	
+	while(line[i]!='\0'){
+		if(line[i]==' ')
+			++space_count;
+		++i;
+	}
+	char** args = calloc(space_count+1, sizeof(char*));
 
+	i=0;
+	int j=0;
+	int prev=0;
+	
+
+	for(i=0;;++i){
+		if(line[i]==' ' || line[i]=='\0'){
+			
+			args[j]=calloc(i-prev+1, sizeof(char));
+			int k=0;
+			for(;prev<i;++prev){
+				args[j][k++]=line[prev];
+			}
+			args[j][k++]='\0';
+			++j;
+			++prev;
+		}
+		if(line[i]=='\0')break;
+	}
+	return args;
+}
