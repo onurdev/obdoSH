@@ -1,0 +1,5 @@
+cp
+mv
+history
+echo
+pipe
