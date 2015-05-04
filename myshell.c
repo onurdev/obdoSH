@@ -42,6 +42,33 @@ Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
 	int i=0;
 	while(c != EOF) {
 		c = getchar();
+
+		if (c == '\033') { // if the first value is esc
+		    getchar(); // skip the [
+		    switch(getchar()) { // the real value
+		        case 'A':
+		            fflush(stdout);
+		            printf("\33[2K\rUP\n");
+		            fflush(stdout);
+		            fflush(stdout);
+		            fflush(stdout);
+		            fflush(stdout);
+		            fflush(stdout);
+		            fflush(stdout);
+		            fflush(stdout);
+		            break;
+		        case 'B':
+		            // code for arrow down
+		            break;
+		        case 'C':
+		            // code for arrow right
+		            break;
+		        case 'D':
+		            // code for arrow left
+		            break;
+		    }
+		}
+
 		line[i]=c;
 		i++;
 		if(c == '\n'){
