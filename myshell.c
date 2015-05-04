@@ -7,7 +7,7 @@
 struct hist_data{
 	struct hist_data *next;
 	struct hist_data *prev;
-	char name[MSG_SIZE];
+	char name[];
 };
 struct hist_data *first_hist;
 
@@ -35,18 +35,27 @@ Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
 	printf(welcomeMessage);
 	printf("obdoSH -> ");
 	
-	char *line = NULL;
+	char line[100];
 	size_t size;
 	int stringLength;
-    while (getline(&line, &size, stdin) != -1) {
-        stringLength = (int)strlen (line);
-        line[stringLength-1]='\0';
-        
-		if(checkBuiltInFunctions(line) == 0) break;
-		
-        fork_exec(line,envp);
-        printf("obdoSH -> ");
-    }
+
+	int i=0;
+	while(c != EOF) {
+		c = getchar();
+		line[i]=c;
+		i++;
+		if(c == '\n'){
+			line[i-1]='\0';
+			i=0;
+			if(checkBuiltInFunctions(line) == 0) break;
+            fork_exec(line,envp);
+			printf("obdoSH -> ");
+		}
+
+	}
+
+
+
     
 	return 0;
 }
