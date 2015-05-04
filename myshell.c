@@ -4,6 +4,13 @@
 #include <signal.h>
 #include <string.h>
 
+struct hist_data{
+	struct hist_data *next;
+	struct hist_data *prev;
+	char name[MSG_SIZE];
+};
+struct hist_data *first_hist;
+
 typedef void (*sighandler_t)(int);
 char c = '\0';
 char  line[100];
