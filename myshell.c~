@@ -6,7 +6,9 @@
 typedef void (*sighandler_t)(int);
 char c = '\0';
 char  line[100];
-void fork_exec(char line[], char *argv[], char *envp[]);
+void fork_exec(char line[],  char *envp[]);
+char** parse_line(char line[],char* args[]);
+void fill_argv(char *tmp_argv,char** my_argv);
 void handle_signal(int signo)
 {
 	printf("\n[sig%d]\n",signo);
@@ -27,7 +29,7 @@ int main(int argc, char *argv[], char *envp[])
 		if(c == '\n'){
 			line[i-1]='\0';
 			i=0;
-                 	fork_exec(line,argv,envp);
+                 	fork_exec(line,envp);
 			printf("[normal][MY_SHELL ] ");
 		}
 
@@ -35,11 +37,13 @@ int main(int argc, char *argv[], char *envp[])
 	printf("EOF\n");
 	return 0;
 }
-void fork_exec(char line[], char *argv[], char *envp[]){
+void fork_exec(char line[], char *envp[]){
+    char* args[10];
+    fill_argv(line,args);
     int id=fork();
     if(id==0){
-	printf("child executing\n");
-        execvp(line,argv);
+	printf("child executing %s %s %s \n",args[0],args[1],args[2]);
+        execvpe(args[0],args,envp);
 	printf("child couldn't be executed\n");
 	exit(0);
     }else if(id>0){
@@ -51,8 +55,60 @@ void fork_exec(char line[], char *argv[], char *envp[]){
 	printf("id<0\n");
 
     }
+} 
 
+char** parse_line(char line[],char* args[]){
 
+    int i=0,argn=0,argi=0,len=strlen(line);
+
+    for(;i<len;++i){
+
+	if(line[i]==' '){
+            argn++;
+            argi=0;
+            printf("|");
+	}else{
+            args[argi][argn]=line[i];
+            printf("%c",line[i]);
+        }
+    }
+    return args;
 
 }
+
+void fill_argv(char *tmp_argv,char** my_argv)
+{
+	char *foo = tmp_argv;
+	int index = 0;
+	char ret[100];
+	bzero(ret, 100);
+	while(*foo != '\0') {
+		if(index == 10)
+			break;
+
+		if(*foo == ' ') {
+			if(my_argv[index] == NULL)
+				my_argv[index] = (char *)malloc(sizeof(char) * strlen(ret) + 1);
+			else {
+				bzero(my_argv[index], strlen(my_argv[index]));
+			}
+			strncpy(my_argv[index], ret, strlen(ret));
+			strncat(my_argv[index], "\0", 1);
+			bzero(ret, 100);
+			index++;
+		} else {
+			strncat(ret, foo, 1);
+		}
+		foo++;
+	}
+	if(ret[0] != '\0') { 
+		my_argv[index] = (char *)malloc(sizeof(char) * strlen(ret) + 1);
+		strncpy(my_argv[index], ret, strlen(ret));
+		strncat(my_argv[index], "\0", 1);
+	}
+	
+}
+
+
+
 

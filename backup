@@ -14,7 +14,7 @@ struct hist_data *first_hist;
 typedef void (*sighandler_t)(int);
 char c = '\0';
 char  line[100];
-void fork_exec(int fdi,int fdo,char line[]);
+void fork_exec(int fdi,int fdo,char line[], char *envp[]);
 char** parse_line(char line[]);
 void handle_signal(int signo)
 {
@@ -23,7 +23,7 @@ void handle_signal(int signo)
 	exit(0);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char *argv[], char *envp[])
 {
 	signal(SIGINT, SIG_IGN);
 	signal(SIGINT, handle_signal);
@@ -75,7 +75,7 @@ Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
 			line[i-1]='\0';
 			i=0;
 			if(checkBuiltInFunctions(line) == 0) break;
-            fork_exec(0,1,line);
+            fork_exec(0,1,line,envp);
 			printf("obdoSH -> ");
 		}
 
@@ -92,7 +92,7 @@ int checkBuiltInFunctions(char line[]){
 	return result;
 }
 
-void fork_exec(int fdi,int fdo,char line[]){
+void fork_exec(int fdi,int fdo,char line[], char *envp[]){
     if (strchr(line,'|') == NULL){
     	printf(" | not found\n");
 		char **args;
@@ -101,25 +101,26 @@ void fork_exec(int fdi,int fdo,char line[]){
 	    int id=fork();
 	    
 	    if(id==0) {
-			
+			if(fdi!=0){
 				 /* Close up standard input of the child */                
                 /* Duplicate the input side of pipe to stdin */
-                dup2(fdi,0);
-			
-			
+                dup2(0,fdi);
+			}
+			if(fdo!=1){
 				 /* Close up standard output of the child */
                 /* Duplicate the output side of pipe to stdout */
-                dup2(fdo,1);
-			
+                dup2(1,fdo);
+			}
 			printf("child executing\n");
-		    execvp(args[0],args);
+		    execvpe(args[0],args,envp);
 			printf("child couldn't be executed\n");
 			exit(0);
 			
 	    } else if(id>0) {
 			
 			int status;
-			printf("waiting\n");		    
+			printf("waiting\n");
+		    
 		    waitpid(id,&status,0);
 			printf("waited\n");
 			
@@ -145,35 +146,31 @@ void fork_exec(int fdi,int fdo,char line[]){
 		int id=fork();
 	    
 	    if(id==0) {
-		
+			if(fdi!=0){
 				 /* Close up standard input of the child */                
                 /* Duplicate the input side of pipe to stdin */
-                dup2(fdi,0);
-		
-		
+                dup2(0,fdi);
+			}
+			if(fdo!=1){
 				 /* Close up standard output of the child */
                 /* Duplicate the output side of pipe to stdout */
-                dup2(fd[1],1);
+                dup2(1,fd[1]);
                 /*close the other end of the pipe*/
                 close(fd[0]);
 
-			
+			}
 			printf("child executing\n");
-		    execvp(args[0],args);
+		    execvpe(args[0],args,envp);
 			printf("child couldn't be executed\n");
 			exit(0);
 			
 	    } else if(id>0) {
 
 	    	close(fd[1]);
-			fork_exec(fd[0],1,line);
-			
+			fork_exec(fd[0],1,line,envp);
 			int status;
-			printf("waiting\n");		    
-		    waitpid(id,&status,0);
-			printf("waited\n");
-			
-			
+			waitpid(id,&status,0);
+
 	    } else {
 			printf("id<0\n");
 	    }
