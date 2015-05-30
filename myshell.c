@@ -7,15 +7,44 @@
 struct hist_data{
 	struct hist_data *next;
 	struct hist_data *prev;
-	char name[];
+	char line[];
 };
-struct hist_data *first_hist;
+struct hist_data *first_hist = NULL;
+
+void add_history(char* line){
+	
+	if(first_hist == NULL){
+		first_hist=(struct hist_data*)malloc(sizeof(struct hist_data));
+		strcpy(first_hist->line,line);
+		first_hist->next = NULL;
+
+	}else{
+
+		struct hist_data *curr_hist=first_hist->next;
+		struct hist_data *prev_hist=first_hist;
+		while(curr_hist != NULL){
+			
+			prev_hist=curr_hist;
+			curr_hist=curr_hist->next;
+
+		}
+		
+		curr_hist=(struct hist_data*)malloc(sizeof(struct hist_data));
+		strcpy(curr_hist->line,line);
+		prev_hist->next=curr_hist;
+		curr_hist->prev=prev_hist;
+		curr_hist->next=NULL;
+		
+	}
+}
+
 
 typedef void (*sighandler_t)(int);
 char c = '\0';
 char  line[100];
 void fork_exec(int fdi,int fdo,char line[]);
 char** parse_line(char line[]);
+void checkBuiltInFunctions(char line[]);
 void handle_signal(int signo)
 {
 	//printf("\n[sig%d]\n",signo);
@@ -74,7 +103,8 @@ Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
 		if(c == '\n'){
 			line[i-1]='\0';
 			i=0;
-			if(checkBuiltInFunctions(line) == 0) break;
+			checkBuiltInFunctions(line);
+			add_history(line);
             fork_exec(0,1,line);
 			printf("obdoSH -> ");
 		}
@@ -84,17 +114,24 @@ Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
 }
 
 // if return value is nonzero there is a problem
-int checkBuiltInFunctions(char line[]){
-	int result = 0;
+void checkBuiltInFunctions(char line[]){
     // exit the shell if exit command is entered.
-	result = strcmp(line, "exit\0");
+	if( strcmp(line, "exit\0")==0)exit(0);
 	
-	return result;
+	if(strcmp(line, "history\0")==0){
+		puts("");
+		struct hist_data *curr_hist=first_hist;
+		int i=0;
+		while(curr_hist != NULL){
+			printf("%d: %s\n",i++,curr_hist->line );
+			curr_hist=curr_hist->next;
+		}
+	}
 }
 
 void fork_exec(int fdi,int fdo,char line[]){
     if (strchr(line,'|') == NULL){
-    	printf(" | not found\n");
+ 	  	//printf(" | not found\n");
 		char **args;
 		args=parse_line(line);
 
@@ -111,7 +148,7 @@ void fork_exec(int fdi,int fdo,char line[]){
                 /* Duplicate the output side of pipe to stdout */
                 dup2(fdo,1);
 			
-			printf("child executing\n");
+			//printf("child executing\n");
 		    execvp(args[0],args);
 			printf("child couldn't be executed\n");
 			exit(0);
@@ -119,9 +156,9 @@ void fork_exec(int fdi,int fdo,char line[]){
 	    } else if(id>0) {
 			
 			int status;
-			printf("waiting\n");		    
+			//printf("waiting\n");		    
 		    waitpid(id,&status,0);
-			printf("waited\n");
+			//printf("waited\n");
 			
 	    } else {
 	    	
@@ -129,13 +166,13 @@ void fork_exec(int fdi,int fdo,char line[]){
 	    }
 
 	}else{
-		printf(" | found\n");
+		//printf(" | found\n");
 		char* pipe_place = strchr(line,'|');
 		*pipe_place = '\0';
 		char* first_proc_line = line;
 		line = pipe_place+1;
-		printf("first: %s\n",first_proc_line );
-		printf("rest: %s\n",line );
+		//printf("first: %s\n",first_proc_line );
+		//printf("rest: %s\n",line );
 		int fd[2];
 		
 		pipe(fd);
@@ -158,9 +195,9 @@ void fork_exec(int fdi,int fdo,char line[]){
                 close(fd[0]);
 
 			
-			printf("child executing\n");
+			//printf("child executing\n");
 		    execvp(args[0],args);
-			printf("child couldn't be executed\n");
+			//printf("child couldn't be executed\n");
 			exit(0);
 			
 	    } else if(id>0) {
@@ -169,11 +206,11 @@ void fork_exec(int fdi,int fdo,char line[]){
 			fork_exec(fd[0],1,line);
 			
 			int status;
-			printf("waiting\n");		    
+			//printf("waiting\n");		    
 		    waitpid(id,&status,0);
-			printf("waited\n");
+			//printf("waited\n");
 			
-			
+
 	    } else {
 			printf("id<0\n");
 	    }
@@ -183,7 +220,7 @@ void fork_exec(int fdi,int fdo,char line[]){
 
 }
 char** parse_line(char line[]){
-	printf("parsing line : \"%s\"\n",line );
+	//printf("parsing line : \"%s\"\n",line );
 	
 	int i=0,space_count=0;
 	
