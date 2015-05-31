@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 This is a simple open source shell. You may find the source code at https://github.com/onurdev/obdoSH\n\
 Licence: MIT Licence\n\
 Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
-	printf(welcomeMessage);
+	printf("%s", welcomeMessage);
 	printf("obdoSH -> ");
 	
 	char line[100];
