@@ -187,21 +187,22 @@ void fork_exec(int fdi,int fdo,char line[]){
  	  	//printf(" | not found\n");
 		char **args;
 		args=parse_line(line);
-
+		
 	    int id=fork();
 	    
 	    if(id==0) {
 			
 				 /* Close up standard input of the child */                
                 /* Duplicate the input side of pipe to stdin */
-                dup2(fdi,0);
+            dup2(fdi,0);
 			
 			
 				 /* Close up standard output of the child */
                 /* Duplicate the output side of pipe to stdout */
-                dup2(fdo,1);
+            dup2(fdo,1);
 			
 			//printf("child executing\n");
+            
 		    execvp(args[0],args);
 			printf("child couldn't be executed\n");
 			exit(0);
@@ -221,9 +222,21 @@ void fork_exec(int fdi,int fdo,char line[]){
 	}else{
 		//printf(" | found\n");
 		char* pipe_place = strchr(line,'|');
+		char* first_proc_end=pipe_place-1;
 		*pipe_place = '\0';
+		while(*first_proc_end==' '){
+		 *first_proc_end='\0';
+		 first_proc_end--;
+		}
+		
+		
 		char* first_proc_line = line;
+		
 		line = pipe_place+1;
+		while(*line==' '){
+			line++;
+		}
+		
 		//printf("first: %s\n",first_proc_line );
 		//printf("rest: %s\n",line );
 		int fd[2];
@@ -232,6 +245,7 @@ void fork_exec(int fdi,int fdo,char line[]){
 		
 		char **args;
 		args=parse_line(first_proc_line);
+
 		int id=fork();
 	    
 	    if(id==0) {
@@ -249,6 +263,7 @@ void fork_exec(int fdi,int fdo,char line[]){
 
 			
 			//printf("child executing\n");
+		    
 		    execvp(args[0],args);
 			//printf("child couldn't be executed\n");
 			exit(0);
