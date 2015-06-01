@@ -1,5 +1,4 @@
-hello: hello.c myshell.c
-	gcc -o hello.o hello.c
-	gcc -o mysh.o myshell.c
+hello: obdoSH.c
+	gcc -o obdoSH obdoSH.c
 clean:
-	rm -f hello.o, mysh.o
+	rm -f obdoSH

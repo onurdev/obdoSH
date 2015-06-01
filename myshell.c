@@ -88,7 +88,7 @@ Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
             add_history(line);
 			if(checkBuiltInFunctions(line)==0){   
             fork_exec(0, 1, line);
-        }
+        	}
             //reset current command
             memset(currentCommand, 0, 100 * (sizeof currentCommand[0]) );
             memset(line, 0, 100 * (sizeof line[0]) );
