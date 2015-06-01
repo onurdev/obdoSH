@@ -76,7 +76,9 @@ Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
         //printf("\n%c - %d\n", c, c);
         if (c == 127 && cursorPosition > 0)
         {
-            removeCharAt(cursorPosition - 1, currentCommand);
+            removeCharAt(cursorPosition - 1, line);
+            memset(currentCommand, 0, 100 * (sizeof currentCommand[0]) );
+            strcpy(currentCommand, line);
             cursorPosition--;
             //printf("\n%c - %d\n", c, c);
         }
