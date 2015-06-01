@@ -27,7 +27,7 @@ char c = '\0';
 char  line[100];
 void fork_exec(int fdi,int fdo,char line[]);
 char** parse_line(char line[]);
-void checkBuiltInFunctions(char line[]);
+int checkBuiltInFunctions(char line[]);
 void add_history(char* line);
 void handle_signal(int signo);
 void setPreviousCommandInHistory(char command[]);
@@ -86,8 +86,9 @@ Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
         {
             line[strlen(line)]='\0';
             add_history(line);
-			checkBuiltInFunctions(line);
+			if(checkBuiltInFunctions(line)==0){   
             fork_exec(0, 1, line);
+        }
             //reset current command
             memset(currentCommand, 0, 100 * (sizeof currentCommand[0]) );
             memset(line, 0, 100 * (sizeof line[0]) );
@@ -144,10 +145,12 @@ void changeCommand(char line[], char current[], char old[], int* cursorPos){
 }
 
 // if return value is nonzero there is a problem
-void checkBuiltInFunctions(char line[]){
+int checkBuiltInFunctions(char line[]){
     // exit the shell if exit command is entered.
-	if( strcmp(line, "exit\0")==0)exit(0);
-	
+	if( strcmp(line, "exit\0")==0){
+		exit(0);
+		return 1;
+	}
 	if(strcmp(line, "history\0")==0){
 		puts("");
 		struct hist_data *curr_hist=first_hist;
@@ -156,7 +159,9 @@ void checkBuiltInFunctions(char line[]){
 			printf("%d: %s\n",i++,curr_hist->line );
 			curr_hist=curr_hist->next;
 		}
+		return 1;
 	}
+	else return 0;
 }
 
 void fork_exec(int fdi,int fdo,char line[]){
