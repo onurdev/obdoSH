@@ -57,15 +57,30 @@ int main(int argc, char *argv[])
      TCSANOW tells tcsetattr to change attributes immediately. */
     tcsetattr( STDIN_FILENO, TCSANOW, &newt);
     
-    /*This is your part:
-     I choose 'e' to end input. Notice that EOF is also turned off
-     in the non-canonical mode*/
     char currentCommand[100] = "";
     int cursorPosition = 0;
     char line[100]="", oldCommand[100] = "";
 
 char* welcomeMessage = "\
-This is a simple open source shell. You may find the source code at https://github.com/onurdev/obdoSH\n\
+                                                                 \n\
+                                                            ,--, \n\
+                                          .--.--.         ,--.'| \n\
+            ,---,         ,---,          /  /    '.    ,--,  | : \n\
+   ,---.  ,---.'|       ,---.'|   ,---. |  :  /`. / ,---.'|  : ' \n\
+  '   ,'\\ |   | :       |   | :  '   ,'\\;  |  |--`  |   | : _' | \n\
+ /   /   |:   : :       |   | | /   /   |  :  ;_    :   : |.'  | \n\
+.   ; ,. ::     |,-.  ,--.__| |.   ; ,. :\\  \\    `. |   ' '  ; : \n\
+'   | |: :|   : '  | /   ,'   |'   | |: : `----.   \\'   |  .'. | \n\
+'   | .; :|   |  / :.   '  /  |'   | .; : __ \\  \\  ||   | :  | ' \n\
+|   :    |'   : |: |'   ; |:  ||   :    |/  /`--'  /'   : |  : ; \n\
+ \\   \\  / |   | '/ :|   | '/  ' \\   \\  /'--'.     / |   | '  ,/  \n\
+  `----'  |   :    ||   :    :|  `----'   `--'---'  ;   : ;--'   \n\
+          /    \\  /  \\   \\  /                       |   ,/       \n\
+          `-'----'    `----'                        '---'        \n\
+                                                                 \n\
+This is a simple open source shell. \n\
+You may find the source code at https://github.com/onurdev/obdoSH\n\
+\n\
 Licence: MIT Licence\n\
 Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
 	printf("%s", welcomeMessage);
@@ -134,14 +149,6 @@ Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
     tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
     
     return 0;
-}
-
-void changeCommand(char line[], char current[], char old[], int* cursorPos){
-	memset(current, 0, 100 * (sizeof current[0]) );
-	if( strcmp(old, "")!=0)
-		strcpy(current, old);
-	else strcpy(current, line);
-	*cursorPos = strlen(current);
 }
 
 // if return value is nonzero there is a problem
@@ -315,6 +322,14 @@ void add_history(char* line){
 		// update current history to last one for scrolling it.
 		currentHistoryAddress = curr_hist;
 	}
+}
+
+void changeCommand(char line[], char current[], char old[], int* cursorPos){
+	memset(current, 0, 100 * (sizeof current[0]) );
+	if( strcmp(old, "")!=0)
+		strcpy(current, old);
+	else strcpy(current, line);
+	*cursorPos = strlen(current);
 }
 
 void setPreviousCommandInHistory(char command[]){
