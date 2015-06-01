@@ -91,19 +91,27 @@ Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
         //printf("\n%c - %d\n", c, c);
         if (c == 127 && cursorPosition > 0)
         {
-            removeCharAt(cursorPosition - 1, line);
-            memset(currentCommand, 0, 100 * (sizeof currentCommand[0]) );
-            strcpy(currentCommand, line);
+            removeCharAt(cursorPosition - 1, currentCommand);
+            memset(line, 0, 100 * (sizeof line[0]) );
+            strcpy(line, currentCommand);
+            
+            // set history pointer to current line
+        	while(currentHistoryAddress != NULL
+        		&& currentHistoryAddress->next != NULL)
+				currentHistoryAddress = currentHistoryAddress->next;
+            
             cursorPosition--;
             //printf("\n%c - %d\n", c, c);
         }
         if (c == 10)
         {
-            line[strlen(line)]='\0';
-            add_history(line);
-			if(checkBuiltInFunctions(line)==0){   
-            fork_exec(0, 1, line);
-        	}
+        	if(strlen(line) > 0){
+	            line[strlen(line)]='\0';
+	            add_history(line);
+				if(checkBuiltInFunctions(line)==0){   
+	            	fork_exec(0, 1, line);
+	        	}
+	        }
             //reset current command
             memset(currentCommand, 0, 100 * (sizeof currentCommand[0]) );
             memset(line, 0, 100 * (sizeof line[0]) );
