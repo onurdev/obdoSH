@@ -25,6 +25,7 @@ struct hist_data *currentHistoryAddress = NULL;
 typedef void (*sighandler_t)(int);
 char c = '\0';
 char  line[100];
+int historyDirection = -1;
 void fork_exec(int fdi,int fdo,char line[]);
 char** parse_line(char line[]);
 int checkBuiltInFunctions(char line[]);
@@ -92,8 +93,6 @@ Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
         if (c == 127 && cursorPosition > 0)
         {
             removeCharAt(cursorPosition - 1, currentCommand);
-            memset(line, 0, 100 * (sizeof line[0]) );
-            strcpy(line, currentCommand);
             
             // set history pointer to current line
         	while(currentHistoryAddress != NULL
@@ -105,11 +104,11 @@ Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
         }
         if (c == 10)
         {
-        	if(strlen(line) > 0){
-	            line[strlen(line)]='\0';
-	            add_history(line);
-				if(checkBuiltInFunctions(line)==0){   
-	            	fork_exec(0, 1, line);
+        	if(strlen(currentCommand) > 0){
+	            line[strlen(currentCommand)]='\0';
+	            add_history(currentCommand);
+				if(checkBuiltInFunctions(currentCommand)==0){   
+	            	fork_exec(0, 1, currentCommand);
 	        	}
 	        }
             //reset current command
@@ -137,12 +136,16 @@ Authors: Osman Sekerlen, Onur Baris Dev.\n\n";
                     break;
             }
         } else {
-            if (isInputValid(c) && strlen(line) < 70){
-                setCharAt(cursorPosition, c, line);
+            if (isInputValid(c) && strlen(currentCommand) < 70){
+                setCharAt(cursorPosition, c, currentCommand);
                 cursorPosition++;
-                memset(currentCommand, 0, 100 * (sizeof currentCommand[0]) );
-                strcpy(currentCommand, line);
-            } else if (strlen(line) == 70){
+	            
+	            // set history pointer to current line
+	        	while(currentHistoryAddress != NULL
+	        		&& currentHistoryAddress->next != NULL)
+					currentHistoryAddress = currentHistoryAddress->next;
+
+            } else if (strlen(currentCommand) == 70){
                 char* warning = "The number of characters in a line cannot exceed 70!";
                 printf("\n%s\n", warning);
             }
@@ -339,7 +342,6 @@ void changeCommand(char line[], char current[], char old[], int* cursorPos){
 	else strcpy(current, line);
 	*cursorPos = strlen(current);
 }
-
 void setPreviousCommandInHistory(char command[]){
 	if (currentHistoryAddress != NULL) {
 		strcpy(command, currentHistoryAddress->line);
@@ -347,6 +349,7 @@ void setPreviousCommandInHistory(char command[]){
 			currentHistoryAddress = currentHistoryAddress->prev;
 	} else strcpy(command, "");
 }
+
 void setNextCommandInHistory(char command[]){
 	if(currentHistoryAddress != NULL){
 		if(currentHistoryAddress->next != NULL){
@@ -355,6 +358,7 @@ void setNextCommandInHistory(char command[]){
 		} else strcpy(command, "");
 	}
 }
+
 
 void handle_signal(int signo)
 {
